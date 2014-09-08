@@ -7,9 +7,18 @@ It can be used either from a computer that connects to the robot via network or 
 ### I.1 Prepare the package
 
  * To install nao_camera on your computer: 
-Please refer to package nao_camera, file README_Romeo to install nao_camera package on your computer
-
- * To install tabletop on your computer: [link!](http://wg-perception.github.io/object_recognition_core/install.html#install)
+```
+cd <your ros workspace>/src
+git clone https://github.com/ros-aldebaran/romeo_robot
+```
+ * To install tabletop on your computer: 
+```
+cd <your_ros_workspace>/src
+git clone https://github.com/ros-interactive-manipulation/household_objects_database
+git clone https://github.com/ros-aldebaran/romeo_apps
+sudo apt-get install ros-<your_rosdistro>-object-recognition-core ros-<your_rosdistro>-object-recognition-ros
+cd <your_ros_workspace> && catkin_make
+```
 
  * To set up the CouchDb: [link!](http://wg-perception.github.io/object_recognition_core/infrastructure/couch.html#object-recognition-core-db).
 
@@ -24,6 +33,7 @@ roslaunch nao_camera camera_depth_python.launch
 
  * Run tabletop:
 ```
+source <your_ros_workspace>/devel/setup.bash
 rosrun object_recognition_core detection -c `rospack find object_recognition_tabletop`/conf/detection.nao.object.ros.ork>
 ```
 
@@ -60,7 +70,10 @@ pipeline2:
 
 Now all are set, you can simply run 
 ```
+source <your_ros_workspace>/install_isolated/setup.bash
 roslaunch nao_camera camera_depth_python.launch
+
+source <your_ros_workspace>/install_isolated/setup.bash
 rosrun object_recognition_core detection -c `rospack find object_recognition_tabletop`/conf/detection.nao.object.ros.ork>
 ```
 
@@ -71,4 +84,3 @@ rostopic echo /recognized_object_array
 ```
 
 in order to print out on the console tabletop's detection result.
-
