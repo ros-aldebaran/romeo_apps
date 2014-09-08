@@ -1,0 +1,74 @@
+# README to use with Romeo
+
+It can be used either from a computer that connects to the robot via network or locally on the robot itself.
+
+## I. TO USE FROM A REMOTE COMPUTER
+
+### I.1 Prepare the package
+
+ * To install nao_camera on your computer: 
+Please refer to package nao_camera, file README_Romeo to install nao_camera package on your computer
+
+ * To install tabletop on your computer: [link!](http://wg-perception.github.io/object_recognition_core/install.html#install)
+
+ * To set up the CouchDb: [link!](http://wg-perception.github.io/object_recognition_core/infrastructure/couch.html#object-recognition-core-db).
+
+ * And add an example object to the database, for example: the mesh of a coke, as explained [here!](https://github.com/hris2003/ork_tutorials/blob/master/doc/source/tutorial02/tutorial.rst#3-finding-objects-with-ork_tabletop)
+
+### I.2 Run tabletop detection
+
+ *  Run nao_camera to publish images for tabletop:
+```
+roslaunch nao_camera camera_depth_python.launch
+```
+
+ * Run tabletop:
+```
+rosrun object_recognition_core detection -c `rospack find object_recognition_tabletop`/conf/detection.nao.object.ros.ork>
+```
+
+ * To visualize tabletop detection result, run rviz then add OrkTable and OrkObject to the display. After that, set the topic of OrkTable to /table_array and OrkObject to /recognized_object_array. You should be able to see what tabletop detects on your rviz screen.
+
+A more general tutorial about using tabletop is presented [here!](https://github.com/hris2003/ork_tutorials/blob/master/doc/source/tutorial02/tutorial.rst).
+
+
+## II. TO USE ON YOUR ROMEO
+
+### II.1 Prepare nao_camera and tabletop
+
+In order to use it on your robot, you need to compile the package in a naoqi environment. Compiling any ROS package in naoqi 
+is quite simple, as explained [here!](http://wiki.ros.org/nao/Installation/compileFromVirtualNao)
+
+II.2 Run tabletop on your robot
+
+Once you have your nao_camera and tabletop compiled and installed on your robot, you need to modify the detection config file in order to provide the right ip of the database. The config file is *tabletop/conf/detection.nao.object.ros.ork*, you need to modify the root parameter of db, as following: 
+
+```
+pipeline2:
+  type: TabletopObjectDetector
+  module: 'object_recognition_tabletop'
+  inputs: [source2, pipeline1]
+  outputs: [sink2]
+  parameters:
+    object_ids: 'all'
+    tabletop_object_ids: 'REDUCED_MODEL_SET'
+    db:
+      type: CouchDB
+      root: http://<IP of your database>:5984
+      collection: object_recognition
+```
+
+Now all are set, you can simply run 
+```
+roslaunch nao_camera camera_depth_python.launch
+rosrun object_recognition_core detection -c `rospack find object_recognition_tabletop`/conf/detection.nao.object.ros.ork>
+```
+
+Since it's on your robot, visualizing tabletop detection result may be consuming. Thus, you can use 
+```
+rostopic echo /table_array
+rostopic echo /recognized_object_array
+```
+
+in order to print out on the console tabletop's detection result.
+
