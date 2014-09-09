@@ -16,6 +16,7 @@ git clone https://github.com/ros-aldebaran/romeo_robot
 cd <your_ros_workspace>/src
 git clone https://github.com/ros-interactive-manipulation/household_objects_database
 git clone https://github.com/ros-aldebaran/romeo_apps
+sudo apt-get install ros-indigo-ecto* ros-indigo-sql-database
 sudo apt-get install ros-<your_rosdistro>-object-recognition-core ros-<your_rosdistro>-object-recognition-ros
 cd <your_ros_workspace> && catkin_make
 ```
