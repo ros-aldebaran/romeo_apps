@@ -47,6 +47,7 @@
 #include <Eigen/Geometry>
 #include "point_cloud2_proxy.h"
 
+#include <household_objects_database/objects_database.h>
 #include <tabletop/object/tabletop_object_detector.h>
 
 #include <opencv2/core/core.hpp>
@@ -259,6 +260,8 @@ struct ObjectRecognizer : public object_recognition_core::db::bases::ModelReader
     params.declare(&ObjectRecognizer::tabletop_object_ids_, "tabletop_object_ids",
                    "The object_ids set as defined by the household object database.",
                    "REDUCED_MODEL_SET");
+    params.declare(&ObjectRecognizer::threshold_, "threshold",
+			"Matching threshold, between 0.0 and 1.0", 0.85f);
   }
 
     static void
@@ -279,7 +282,7 @@ struct ObjectRecognizer : public object_recognition_core::db::bases::ModelReader
       tabletop_object_ids_.dirty(true);
 
       perform_fit_merge_ = true;
-      confidence_cutoff_ = 0.55f;
+      confidence_cutoff_ = *threshold_;
     }
 
     /** Compute the pose of the table plane
@@ -336,7 +339,6 @@ struct ObjectRecognizer : public object_recognition_core::db::bases::ModelReader
         // Add the pose
         const geometry_msgs::Pose &pose = result.pose_;
         cv::Vec3f T(pose.position.x, pose.position.y, pose.position.z);
-
         Eigen::Quaternionf quat(pose.orientation.w, pose.orientation.x, pose.orientation.y, pose.orientation.z);
 
         cv::Vec3f new_T = rotations[table_index] * T + translations[table_index];
@@ -353,18 +355,18 @@ struct ObjectRecognizer : public object_recognition_core::db::bases::ModelReader
         ros_clouds[0].reset(new sensor_msgs::PointCloud2());
         sensor_msgs::PointCloud2Proxy<sensor_msgs::PointXYZ> proxy(*(ros_clouds[0]));
 
-      cv::Matx33f Rot = rotations[table_index];
-      cv::Vec3f Tra = translations[table_index];
-      // Add the cloud
-      proxy.resize(result.cloud_.size());
-      sensor_msgs::PointXYZ *iter = &(proxy[0]);
-      for(size_t i = 0; i < result.cloud_.size(); ++i, ++iter) {
-        //Transform the object points back to their original frame
-        cv::Vec3f res = Rot * result.cloud_[i] + Tra;
-        iter->x = res[0];
-        iter->y = res[1];
-        iter->z = res[2];
-      }
+        cv::Matx33f Rot = rotations[table_index];
+        cv::Vec3f Tra = translations[table_index];
+        // Add the cloud
+        proxy.resize(result.cloud_.size());
+        sensor_msgs::PointXYZ *iter = &(proxy[0]);
+        for(size_t i = 0; i < result.cloud_.size(); ++i, ++iter) {
+          //Transform the object points back to their original frame
+          cv::Vec3f res = Rot * result.cloud_[i] + Tra;
+          iter->x = res[0];
+          iter->y = res[1];
+          iter->z = res[2];
+        }
 
         pose_result.set_clouds(ros_clouds);
 
@@ -387,8 +389,10 @@ struct ObjectRecognizer : public object_recognition_core::db::bases::ModelReader
     float confidence_cutoff_;
     bool perform_fit_merge_;
     ecto::spore<std::string> tabletop_object_ids_;
+    ecto::spore<float> threshold_;
   /** map to convert from artificial household id to db id */
   std::map<size_t, std::string> household_id_to_db_id_;
+
 };
 }
 
