@@ -1,30 +1,44 @@
-# README to use with Romeo
+README to use with Romeo
+=========================
 
 It can be used either from a computer that connects to the robot via network or locally on the robot itself.
 
-## I. TO USE FROM A REMOTE COMPUTER
+I. TO USE FROM A REMOTE COMPUTER
+=================================
 
-### I.1 Prepare the package
+I.1 Prepare the package
+------------------------
 
- * To install nao_camera on your computer: 
-Please refer to package nao_camera, file README_Romeo to install nao_camera package on your computer
-
- * To install tabletop on your computer: [link!](http://wg-perception.github.io/object_recognition_core/install.html#install)
+ * To install romeo_sensors on your computer: 
+```
+cd <your ros workspace>/src
+git clone https://github.com/ros-aldebaran/romeo_robot
+```
+ * To install tabletop on your computer:
+```
+cd <your_ros_workspace>/src
+git clone https://github.com/ros-interactive-manipulation/household_objects_database
+git clone https://github.com/ros-aldebaran/romeo_apps
+sudo apt-get install ros-<your_rosdistro>-object-recognition-core ros-<your_rosdistro>-object-recognition-ros
+cd <your_ros_workspace> && catkin_make
+```
 
  * To set up the CouchDb: [link!](http://wg-perception.github.io/object_recognition_core/infrastructure/couch.html#object-recognition-core-db).
 
  * And add an example object to the database, for example: the mesh of a coke, as explained [here!](https://github.com/hris2003/ork_tutorials/blob/master/doc/source/tutorial02/tutorial.rst#3-finding-objects-with-ork_tabletop)
 
-### I.2 Run tabletop detection
+I.2 Run tabletop detection
+---------------------------
 
- *  Run nao_camera to publish images for tabletop:
+ *  Run romeo_sensors/camera to publish images for tabletop:
 ```
-roslaunch nao_camera camera_depth_python.launch
+roslaunch romeo_sensors cameras.launch
 ```
 
  * Run tabletop:
 ```
-rosrun object_recognition_core detection -c `rospack find object_recognition_tabletop`/conf/detection.nao.object.ros.ork>
+source <your_ros_workspace>/devel/setup.bash
+rosrun object_recognition_core detection -c `rospack find object_recognition_tabletop`/conf/detection.romeo.object.ros.ork>
 ```
 
  * To visualize tabletop detection result, run rviz then add OrkTable and OrkObject to the display. After that, set the topic of OrkTable to /table_array and OrkObject to /recognized_object_array. You should be able to see what tabletop detects on your rviz screen.
@@ -32,16 +46,19 @@ rosrun object_recognition_core detection -c `rospack find object_recognition_tab
 A more general tutorial about using tabletop is presented [here!](https://github.com/hris2003/ork_tutorials/blob/master/doc/source/tutorial02/tutorial.rst).
 
 
-## II. TO USE ON YOUR ROMEO
+II. TO USE ON YOUR ROMEO
+=========================
 
-### II.1 Prepare nao_camera and tabletop
+II.1 Prepare romeo_robot and tabletop
+--------------------------------------
 
-In order to use it on your robot, you need to compile the package in a naoqi environment. Compiling any ROS package in naoqi 
+In order to use it on your robot, you need to compile the package romeo_robot and tabletop in a naoqi environment. Compiling any ROS package in naoqi 
 is quite simple, as explained [here!](http://wiki.ros.org/nao/Installation/compileFromVirtualNao)
 
 II.2 Run tabletop on your robot
+-------------------------------
 
-Once you have your nao_camera and tabletop compiled and installed on your robot, you need to modify the detection config file in order to provide the right ip of the database. The config file is *tabletop/conf/detection.nao.object.ros.ork*, you need to modify the root parameter of db, as following: 
+Once you have your nao_camera and tabletop compiled and installed on your robot, you need to modify the detection config file in order to provide the right ip of the database. The config file is *tabletop/conf/detection.romeo.object.ros.ork*, you need to modify the root parameter of db, as following: 
 
 ```
 pipeline2:
@@ -60,7 +77,10 @@ pipeline2:
 
 Now all are set, you can simply run 
 ```
+source <your_ros_workspace>/install_isolated/setup.bash
 roslaunch nao_camera camera_depth_python.launch
+
+source <your_ros_workspace>/install_isolated/setup.bash
 rosrun object_recognition_core detection -c `rospack find object_recognition_tabletop`/conf/detection.nao.object.ros.ork>
 ```
 
@@ -71,4 +91,3 @@ rostopic echo /recognized_object_array
 ```
 
 in order to print out on the console tabletop's detection result.
-
